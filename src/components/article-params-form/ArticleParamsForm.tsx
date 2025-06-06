@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ArticleStateType, backgroundColors, contentWidthArr, defaultArticleState, fontColors, fontFamilyOptions, fontSizeOptions } from 'src/constants/articleProps';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
@@ -10,22 +10,33 @@ import { Text } from 'src/ui/text';
 import styles from './ArticleParamsForm.module.scss';
 
 export const ArticleParamsForm = (props: { onChange: (selected: ArticleStateType) => void }) => {
-	const [isOpen, setOpen] = useState<boolean>(false);
+	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 	const [articleState, setArticleState] = useState(defaultArticleState);
 	const formRef = useRef(null);
 
 	useOutsideClickClose({
-		isOpen: isOpen,
-		onChange: (newState) => { setOpen(newState) },
+		isOpen: isMenuOpen,
+		onChange: (newState) => { setIsMenuOpen(newState) },
 		rootRef: formRef
 	})
 
+	const handleSubmit = (e: React.SyntheticEvent) => {
+		e.preventDefault();
+		setIsMenuOpen(!isMenuOpen);
+		props.onChange(articleState);
+	}
+
+	const handleReset = () => {
+		setArticleState(defaultArticleState);
+		props.onChange(defaultArticleState);
+	}
+
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={() => { setOpen(!isOpen) }} />
+			<ArrowButton isOpen={isMenuOpen} onClick={() => { setIsMenuOpen(!isMenuOpen) }} />
 
-			<aside className={isOpen ? `${styles.container} ${styles.container_open}` : styles.container}>
-				<form className={styles.form} ref={formRef} >
+			<aside className={isMenuOpen ? `${styles.container} ${styles.container_open}` : styles.container}>
+				<form className={styles.form} ref={formRef} onSubmit={handleSubmit} onReset={handleReset}>
 					<Text as='h2' size={31} weight={800} align='left' uppercase>
 						Задайте параметры
 					</Text>
@@ -37,14 +48,8 @@ export const ArticleParamsForm = (props: { onChange: (selected: ArticleStateType
 					<Select selected={articleState.backgroundColor} options={backgroundColors} title={'Цвет фона'} onChange={(selected) => setArticleState({ ...articleState, backgroundColor: selected })} />
 					<Select selected={articleState.contentWidth} options={contentWidthArr} title={'Ширина контента'} onChange={(selected) => setArticleState({ ...articleState, contentWidth: selected })} />
 					<div className={styles.bottomContainer}>
-						<Button title='Сбросить' htmlType='reset' type='clear' onClick={() => {
-							setArticleState(defaultArticleState);
-							props.onChange(defaultArticleState);
-						}}/>
-						<Button title='Применить' htmlType='submit' type='apply' onClick={() => {
-							setOpen(!isOpen);
-							props.onChange(articleState);
-						}}/>
+						<Button title='Сбросить' htmlType='reset' type='clear' />
+						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
 			</aside>
